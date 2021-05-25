@@ -85,6 +85,7 @@ class Player(pygame.sprite.Sprite):
 	
 	def die(self):
 		self.teleport(self.startX, self.startY)
+		fire.die()	
 		self.score = 0
 		
 		
@@ -131,7 +132,7 @@ class Bullet(pygame.sprite.Sprite):
 		if self.direction == 'down':
 			self.speedY = 10	
 			if self.rect.y > (self.startY + 50):
-				self.kill()	
+				self.kill()
 		self.rect.x += self.speedX
 		self.rect.y += self.speedY
 
@@ -166,11 +167,6 @@ class Pine(Mountain):
 		self.image.fill('#00A00B')
 		self.rect = self.image.get_rect(x = self.x, y = self.y )
 		self.HP = 100
-		
-	# def kill(self):
-		
-		# pygame.sprite.Sprite.kill(self)
-		
 				
 class Fire(Mountain):
 	def __init__(self, x, y):
@@ -240,8 +236,7 @@ def draw_text(surf, font_name, text, size, x, y):
 	surf.blit(text_surface, text_rect)
 
 def draw_HP_bar(surf, x, y, hp):
-	if hp < 0:
-		hp = 0
+	
 	BAR_LENGTH = int(width / 4)
 	BAR_HEIGHT = int(height / 30)
 	fill = (hp / fire.HP_MAX) * BAR_LENGTH
@@ -412,7 +407,7 @@ while running:
 			running = False
 			raise SystemExit	
 	print(level)
-	if (pygame.time.get_ticks() - new_pine_update) > 10000:
+	if (pygame.time.get_ticks() - new_pine_update) > 1000:
 		new_pine_update = pygame.time.get_ticks()		
 		new_pine_rand = True
 		while new_pine_rand:
