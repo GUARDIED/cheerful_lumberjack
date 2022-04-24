@@ -277,19 +277,17 @@ pines = pygame.sprite.Group()
 _fire = pygame.sprite.Group()
 bullets = pygame.sprite.Group()	
 bears = pygame.sprite.Group()	
-all_bloks = []
 
 # any extra code herre
 
 pygame.display.flip()
 pygame.display.update()
-damage_modify = 0
 new_pine_update = pygame.time.get_ticks()
 
-button = pygame.Rect((width / 2) - (width / 10), (height / 2) - (height / 30), width / 5,  height / 10)
 new_game_run = False
 main_menu_bool = True
 mouse_pos = 0, 0
+score = 0
 while running:
 	fps.tick(FPS)
 	for event in pygame.event.get():
@@ -312,13 +310,23 @@ while running:
 		bg.fill(background)
 		game_canvas.blit(bg, (0, 0))	
 		window.blit(game_canvas, (0, 0))
+		if score > 0:
+			draw_text(window, font_name, "YOUR SCORE: " + str(score), int(height / 10), int(width / 2), int(height / 30))
+		button = pygame.Rect((width / 2) - (width / 10), (height / 2) - (height / 30), width / 5,  height / 10)
 		button_new_game = pygame.draw.rect(window,'#FFFF00', button)	
 		draw_text(window, font_name, "NEW GAME", 20, width / 2, height / 2)
+		
 		pygame.display.flip()
 		pygame.display.update()				
 	
 	if new_game_run:
 		new_game_run = False
+		score = 0
+		damage_modify = 0
+		hits1 = None
+		fire.HP_MAX = 100
+		fire.HP = 100
+		hits = None
 		all_bloks = []
 		level = [
 		'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
@@ -462,7 +470,7 @@ while running:
 		if hero.firewood > 0:
 			hit.HP += hero.firewood
 			hero.firewood = 0
-			hero.score += 1
+			score += 1
 			if hit.HP > fire.HP_MAX:
 				fire.HP_MAX = hit.HP
 
@@ -478,7 +486,7 @@ while running:
 	for ent in entities:
 		window.blit(ent.image, camera.apply(ent))
 	
-	draw_text(window, font_name, str(hero.score), int(height / 30), int(width / 4), int(height / 30))
+	draw_text(window, font_name, str(score), int(height / 30), int(width / 4), int(height / 30))
 	life_time = str(fire.minute) + ':' + str(fire.sec)
 	draw_text(window, font_name, life_time, int(height / 30), int(width * 3 / 4), int(height / 30))
 	draw_HP_bar(window, int(width / 2), int(height / 35), fire.HP)
