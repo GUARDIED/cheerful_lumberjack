@@ -25,8 +25,8 @@ class Player(pygame.sprite.Sprite):
 		self.speedY = 0
 		self.damage = 20
 		self.direction = 'left'
-		self.firewood = 0 # цифра дает здоровье в зависимости от дерева, пока дерево только одно. )))
-	
+		self.firewood = 0 
+		
 	def update(self, blocks):
 		self.speedX = 0
 		self.speedY = 0
@@ -62,7 +62,8 @@ class Player(pygame.sprite.Sprite):
 				if speedY < 0:
 					self.rect.top = block.rect.bottom
 				if isinstance(block, Bear):
-					self.die()					
+					self.die()	
+					fire.HP = 0				
 	
 	def shoot(self):
 		bullet = Bullet(self.rect.centerx, self.rect.centery, self.direction)
@@ -70,10 +71,11 @@ class Player(pygame.sprite.Sprite):
 		bullets.add(bullet)
 	
 	def die(self):
+		main_menu_bool = True
 		self.teleport(self.startX, self.startY)
-		fire.die()	
-		self.score = 0		
-		
+		fire.HP = 0
+		self.score = 0	
+				
 	def teleport(self, goX, goY):
 		self.rect.x = goX
 		self.rect.y = goY
@@ -176,7 +178,7 @@ class Fire(Mountain):
 		if now_damage - self.last_update_damage > 1000:
 			self.last_update_damage = now_damage
 			self.sec += 1
-			self.HP -= (self.state / 4 )
+			self.HP -= (self.state / 4)
 			if (self.sec % 60) == 0:
 				self.minute += 1	
 				self.sec = 0		
@@ -274,6 +276,7 @@ mountains = pygame.sprite.Group()
 pines = pygame.sprite.Group()
 _fire = pygame.sprite.Group()
 bullets = pygame.sprite.Group()	
+bears = pygame.sprite.Group()	
 all_bloks = []
 
 # any extra code herre
@@ -283,9 +286,10 @@ pygame.display.update()
 damage_modify = 0
 new_pine_update = pygame.time.get_ticks()
 
-button = pygame.Rect(100, 100, 50, 50)
+button = pygame.Rect((width / 2) - (width / 10), (height / 2) - (height / 30), width / 5,  height / 10)
 new_game_run = False
 main_menu_bool = True
+mouse_pos = 0, 0
 while running:
 	fps.tick(FPS)
 	for event in pygame.event.get():
@@ -293,20 +297,29 @@ while running:
 			running = False
 			raise SystemExit	
 	
-	if main_menu_bool: 
-		while running:
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					running = False
-					raise SystemExit	
-				if event.type ==  pygame.KEYUP:
+	while main_menu_bool:
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				running = False
+				raise SystemExit	
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				mouse_pos = event.pos
+				if button.collidepoint(mouse_pos):
 					new_game_run = True	
-			pygame.draw.rect(window,'#FFFF00', button)	
-			pygame.display.flip()
-			pygame.display.update()				
+					main_menu_bool = False
+		game_canvas = pygame.Surface((width, height))
+		bg = pygame.Surface((width, height))
+		bg.fill(background)
+		game_canvas.blit(bg, (0, 0))	
+		window.blit(game_canvas, (0, 0))
+		button_new_game = pygame.draw.rect(window,'#FFFF00', button)	
+		draw_text(window, font_name, "NEW GAME", 20, width / 2, height / 2)
+		pygame.display.flip()
+		pygame.display.update()				
 	
 	if new_game_run:
 		new_game_run = False
+		all_bloks = []
 		level = [
 		'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
 		'M                                                  M',
@@ -399,7 +412,8 @@ while running:
 					if rand_mob > 99:
 						bear = Bear(x, y)
 						entities.add(bear)				
-						all_bloks.append(bear)					
+						all_bloks.append(bear)	
+						bears.add(bear)				
 						level[int(y / PLATFORM_width)] = level[int(y / PLATFORM_width)][0 : int(x / PLATFORM_width)] + 'B' + level[int(y / PLATFORM_width)][((int(x / PLATFORM_width)) + 1) : ]
 					if rand_mob < 15:
 						pine = Pine(x, y)
@@ -414,8 +428,7 @@ while running:
 		total_level_width = len(level[0]) * PLATFORM_width
 		total_level_height = len(level) * PLATFORM_height
 		camera = Camera(camera_config, total_level_width, total_level_height)
-		window.blit(game_canvas, (0, 0))
-		
+		window.blit(game_canvas, (0, 0))		
 		
 	if (pygame.time.get_ticks() - new_pine_update) > 1000:
 		new_pine_update = pygame.time.get_ticks()		
@@ -441,6 +454,8 @@ while running:
 	if fire.HP < 0:
 		hero.die()
 		fire.die()
+		
+		main_menu_bool = True
 	
 	hits1 = pygame.sprite.groupcollide(_fire, bullets, False, True)
 	for hit in hits1:
@@ -450,7 +465,7 @@ while running:
 			hero.score += 1
 			if hit.HP > fire.HP_MAX:
 				fire.HP_MAX = hit.HP
-	
+
 	hits = pygame.sprite.groupcollide(pines, bullets, False, True)
 	for hit in hits:
 		hit.HP = hit.HP - hero.damage - damage_modify
