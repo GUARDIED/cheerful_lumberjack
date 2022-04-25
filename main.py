@@ -102,7 +102,7 @@ class Bullet(pygame.sprite.Sprite):
 		
 	def update(self):
 		if self.direction == 'left':
-			self.speedX = -10
+			self.speedX = -100
 			if self.rect.x < (self.startX - 100):
 				self.kill()
 		if self.direction == 'right':
@@ -146,10 +146,15 @@ class Pine(Mountain):
 		Mountain.__init__(self, x, y)
 		self.x = x
 		self.y = y
-		self.image = pygame.Surface((int(self.PLATFORM_width), int(self.PLATFORM_height)))	
-		self.image.fill('#00A00B')
-		self.rect = self.image.get_rect(x = self.x, y = self.y )
+		#self.Pine_IMG = pygame.image.load('pine1.bmp')
+		self.image = pygame.image.load('pine1.gif')#pygame.Surface((int(self.PLATFORM_width), int(self.PLATFORM_height)))	
+		self.image.set_colorkey((255,255,255))
+		self.image = pygame.transform.scale(self.image, (int(self.PLATFORM_width), int(self.PLATFORM_height)))	
+		#self.image.set_colorkey(255,255,255)
+		#self.image.fill('#00A00B')
+		self.rect = self.image.get_rect(x = self.x, y = self.y)
 		self.HP = 100
+		
 				
 class Fire(Mountain):
 	def __init__(self, x, y):
@@ -288,6 +293,7 @@ new_game_run = False
 main_menu_bool = True
 mouse_pos = 0, 0
 score = 0
+
 while running:
 	fps.tick(FPS)
 	for event in pygame.event.get():
@@ -324,8 +330,6 @@ while running:
 		score = 0
 		damage_modify = 0
 		hits1 = None
-		fire.HP_MAX = 100
-		fire.HP = 100
 		hits = None
 		all_bloks = []
 		level = [
@@ -414,7 +418,9 @@ while running:
 					fire = Fire(x, y)
 					entities.add(fire)
 					_fire.add(fire)
-					all_bloks.append(fire)			
+					all_bloks.append(fire)	
+					fire.HP_MAX = 100
+					fire.HP = 100		
 				if col == " ":
 					rand_mob = random.randrange(0, 101)
 					if rand_mob > 99:
@@ -429,9 +435,11 @@ while running:
 						pines.add(pine)
 						all_bloks.append(pine)	
 						level[int(y / PLATFORM_width)] = level[int(y / PLATFORM_width)][0 : int(x / PLATFORM_width)] + 'P' + level[int(y / PLATFORM_width)][((int(x / PLATFORM_width)) + 1) : ]
+						#game_canvas.blit(pine.image, pine)
 				x += PLATFORM_width
 			y += PLATFORM_height	
 			x = 0
+		
 		entities.add(hero)	
 		total_level_width = len(level[0]) * PLATFORM_width
 		total_level_height = len(level) * PLATFORM_height
