@@ -26,6 +26,9 @@ class Player(pygame.sprite.Sprite):
 		self.damage = 20
 		self.direction = 'left'
 		self.firewood = 0 
+		self.shot_update = pygame.time.get_ticks()	
+		self.shot_speed = 600
+		
 		
 	def update(self, blocks):
 		self.speedX = 0
@@ -66,9 +69,11 @@ class Player(pygame.sprite.Sprite):
 					fire.HP = 0				
 	
 	def shoot(self):
-		bullet = Bullet(self.rect.centerx, self.rect.centery, self.direction)
-		entities.add(bullet)
-		bullets.add(bullet)
+		if (pygame.time.get_ticks() - self.shot_update) > self.shot_speed:
+			self.shot_update = pygame.time.get_ticks()	
+			bullet = Axe(self.rect.centerx, self.rect.centery, self.direction)
+			entities.add(bullet)
+			bullets.add(bullet)
 	
 	def die(self):
 		main_menu_bool = True
@@ -79,6 +84,40 @@ class Player(pygame.sprite.Sprite):
 	def teleport(self, goX, goY):
 		self.rect.x = goX
 		self.rect.y = goY
+
+class Axe(pygame.sprite.Sprite):
+	def __init__(self, x, y, direction):
+		self.screen_ratio = pygame.display.Info().current_w / pygame.display.Info().current_h
+		if self.screen_ratio > 1:
+			self.width = int(pygame.display.Info().current_w / 10)
+			self.height = self.width
+		else: 
+			self.width = int(pygame.display.Info().current_h / 10)
+			self.height = self.width
+		pygame.sprite.Sprite.__init__(self)	
+		self.image = pygame.Surface((self.width + 10, self.height + 10))
+		self.image.fill('#FF0000')
+		self.startX = x
+		self.startY = y
+		self.direction = direction
+				
+		if self.direction == 'left':			
+			self.rect = self.image.get_rect(center = (self.startX - 20, self.startY))
+
+		if self.direction == 'right':
+			self.rect = self.image.get_rect(center = (self.startX + 20, self.startY))
+
+		if self.direction == 'up':
+			self.rect = self.image.get_rect(center = (self.startX, self.startY - 20))
+
+		if self.direction == 'down':
+			self.rect = self.image.get_rect(center = (self.startX, self.startY + 20))		
+		
+	def update(self):
+		if (pygame.time.get_ticks() - self.new_axe_update) > 60:
+			self.new_axe_update = pygame.time.get_ticks()	
+			self.kill()
+
 	
 class Bullet(pygame.sprite.Sprite):
 	def __init__(self, x, y, direction):
@@ -283,7 +322,6 @@ _fire = pygame.sprite.Group()
 bullets = pygame.sprite.Group()	
 bears = pygame.sprite.Group()	
 
-# any extra code herre
 
 pygame.display.flip()
 pygame.display.update()
@@ -333,59 +371,31 @@ while running:
 		hits = None
 		all_bloks = []
 		level = [
-		'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                         H                        M',
-		'M                         F                        M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'M                                                  M',
-		'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM']	
+		'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M               H             M',
+		'M               F             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'M                             M',
+		'MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM']	
 		
 		game_canvas = pygame.Surface((width, height))
 		bg = pygame.Surface((width, height))
@@ -403,12 +413,14 @@ while running:
 			PLATFORM_height = PLATFORM_width
 		# PLATFORM_width = 10
 		# PLATFORM_height = PLATFORM_width
-		hero = Player(26* PLATFORM_width, 25 * PLATFORM_height)
+		#hero = Player(6* PLATFORM_width, 6 * PLATFORM_height)
 		x = y = 0
 		for row in level:
 			for col in row:
 				snow = Snow(x, y)
 				entities.add(snow)
+				if col == "H":
+					hero = Player(x , y)
 				if col == "M":
 					mountain = Mountain(x, y)
 					entities.add(mountain)
@@ -446,19 +458,19 @@ while running:
 		camera = Camera(camera_config, total_level_width, total_level_height)
 		window.blit(game_canvas, (0, 0))		
 		
-	if (pygame.time.get_ticks() - new_pine_update) > 1000:
-		new_pine_update = pygame.time.get_ticks()		
-		new_pine_rand = True
-		while new_pine_rand:
-			y = random.randrange(1, len(level))
-			x = random.randrange(1, len(level[0]))
-			if level[y][x] == ' ':
-				pine = Pine(x * PLATFORM_width, y * PLATFORM_height)
-				entities.add(pine)
-				pines.add(pine)
-				all_bloks.append(pine)	
-				level[y] = level[y][ : x] + 'P' + level[y][(x + 1) : ]		
-				new_pine_rand = False	
+	# if (pygame.time.get_ticks() - new_pine_update) > 1000:
+		# new_pine_update = pygame.time.get_ticks()		
+		# new_pine_rand = True
+		# while new_pine_rand:
+			# y = random.randrange(1, len(level))
+			# x = random.randrange(1, len(level[0]))
+			# if level[y][x] == ' ':
+				# pine = Pine(x * PLATFORM_width, y * PLATFORM_height)
+				# entities.add(pine)
+				# pines.add(pine)
+				# all_bloks.append(pine)	
+				# level[y] = level[y][ : x] + 'P' + level[y][(x + 1) : ]		
+				# new_pine_rand = False	
 	
 	window.blit(game_canvas, (0, 0))			
 	hero.update(all_bloks)
@@ -477,6 +489,17 @@ while running:
 	for hit in hits1:
 		if hero.firewood > 0:
 			hit.HP += hero.firewood
+			new_pine_rand = True
+			while new_pine_rand:
+				y = random.randrange(1, len(level))
+				x = random.randrange(1, len(level[0]))
+				if level[y][x] == ' ':
+					pine = Pine(x * PLATFORM_width, y * PLATFORM_height)
+					entities.add(pine)
+					pines.add(pine)
+					all_bloks.append(pine)	
+					level[y] = level[y][ : x] + 'P' + level[y][(x + 1) : ]		
+					new_pine_rand = False	
 			hero.firewood = 0
 			score += 1
 			if hit.HP > fire.HP_MAX:
@@ -489,7 +512,7 @@ while running:
 			all_bloks.remove(hit)
 			level[int(hit.y / PLATFORM_width)] = level[int(hit.y / PLATFORM_width)][ : int(hit.x / PLATFORM_width)] + ' ' + level[int(hit.y / PLATFORM_width)][((int(hit.x / PLATFORM_width)) + 1) : ]		
 			hit.kill()
-			hero.firewood = 20
+			hero.firewood = 20 #количество дров в руке
 	
 	for ent in entities:
 		window.blit(ent.image, camera.apply(ent))
